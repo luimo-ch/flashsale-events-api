@@ -9,5 +9,5 @@ public class FlashsaleEventsApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(FlashsaleEventsApiApplication.class, args);
     }
-
 }
+
