@@ -1,17 +1,9 @@
 spring:
   application.name: flashsale-events-api
-  profiles:
-    active: local
   cloud:
     gcp:
       project-id: flashsale-456707
-      credentials:
-        location: file:${GOOGLE_APPLICATION_CREDENTIALS_PURCHASE_PROCESSOR}
     secretmanager:
       enabled: false
     core:
       enabled: false
-  data:
-    redis:
-      host: redis
-      port: 6379

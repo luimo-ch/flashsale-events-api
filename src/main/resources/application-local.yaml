@@ -1,0 +1,10 @@
+# configuration for local development - using dockerized dependencies (see docker-compose.yml)
+spring:
+  cloud:
+    gcp:
+      credentials:
+        location: file:${GOOGLE_APPLICATION_CREDENTIALS_PURCHASE_PROCESSOR}
+  data:
+    redis:
+      host: localhost
+      port: 6379
