@@ -13,8 +13,7 @@ public class FlashSalePurchaseController {
     }
 
     @PostMapping
-    public String createPurchaseRequest(FlashsalePurchaseRequestRest purchaseRequest) {
-        purchaseCacheService.submitPurchase(purchaseRequest);
-        return "success";
+    public FlashsalePurchaseResponseREST createPurchaseRequest(FlashsalePurchaseRequestRest purchaseRequest) {
+        return purchaseCacheService.submitPurchase(purchaseRequest);
     }
 }

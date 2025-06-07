@@ -13,5 +13,5 @@ spring:
 #      schema.registry.url: ${spring.kafka.properties.schema.registry.url} # dynamically set by test-containers
   data:
     redis:
-      host: localhost #{spring.data.redis.host} # dynamically set by test-containers
-      port: 6379 #${spring.data.redis.port} # dynamically set by test-containers
+      host: localhost # dynamically overridden by test-containers
+      port: 6379 # dynamically overridden by test-containers
