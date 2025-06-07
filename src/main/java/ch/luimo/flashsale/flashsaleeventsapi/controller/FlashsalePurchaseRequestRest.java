@@ -2,7 +2,7 @@ package ch.luimo.flashsale.flashsaleeventsapi.controller;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 public class FlashsalePurchaseRequestRest {
@@ -10,6 +10,6 @@ public class FlashsalePurchaseRequestRest {
     String userId;
     String itemId;
     Integer quantity;
-    LocalDateTime requestedAt;
+    OffsetDateTime requestedAt;
     SourceType sourceType;
 }
