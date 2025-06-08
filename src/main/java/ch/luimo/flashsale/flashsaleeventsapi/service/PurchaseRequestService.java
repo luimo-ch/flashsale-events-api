@@ -26,9 +26,13 @@ public class PurchaseRequestService {
     public FlashsalePurchaseResponseREST submitPurchase(FlashsalePurchaseRequestRest purchaseRequestRest) {
         String purchaseRequestId = purchaseRequestRest.getPurchaseRequestId();
         String requestStatus = purchaseCacheService.getPurchaseRequestStatus(purchaseRequestId);
+
         if (PurchaseRequestStatus.isRejected(requestStatus)) {
             String rejectionReason = purchaseCacheService.getRejectionReason(purchaseRequestId);
             return mapToFlashsalePurchaseRejectionREST(purchaseRequestRest, rejectionReason);
+        }
+        if(PurchaseRequestStatus.isConfirmed(requestStatus)) {
+            return mapToFlashsalePurchaseResponseREST(purchaseRequestRest, CONFIRMED);
         }
 
         if (PurchaseRequestStatus.isUnknown(requestStatus)) {
@@ -44,34 +48,47 @@ public class PurchaseRequestService {
         try {
             return pollResultStateAsync(purchaseRequestId).get();
         } catch (InterruptedException | ExecutionException e) {
-            LOG.error("Error while submitting purchase request", e);
+            LOG.error("Error while polling purchase request", e);
             throw new RuntimeException(e);
         }
     }
 
-    public Future<PurchaseRequestStatus> pollResultStateAsync(String purchaseRequestId) {
+    public CompletableFuture<PurchaseRequestStatus> pollResultStateAsync(String purchaseRequestId) {
         CompletableFuture<PurchaseRequestStatus> future = new CompletableFuture<>();
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
         final long timeoutMillis = 5000;
         final long pollingIntervalMillis = 500;
+        final long startTime = System.currentTimeMillis();
 
-        ScheduledFuture<?> pollingTask = scheduler.scheduleAtFixedRate(() -> {
-            LOG.info("Polling purchase request state for purchaseRequestId {}", purchaseRequestId);
-            String status = purchaseCacheService.getPurchaseRequestStatus(purchaseRequestId);
-            if (PurchaseRequestStatus.isConfirmedOrRejected(status)) {
-                LOG.info("Purchase request {} was processed. Purchase request is {}", purchaseRequestId, status);
-                future.complete(PurchaseRequestStatus.valueOf(status));
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                // Check if we've exceeded the timeout
+                if (System.currentTimeMillis() - startTime >= timeoutMillis) {
+                    if (future.complete(PurchaseRequestStatus.PENDING)) {
+                        LOG.debug("Polling timed out after 5 seconds for request {}", purchaseRequestId);
+                    }
+                    scheduler.shutdown();
+                    return;
+                }
+                LOG.info("Polling purchase request state for purchaseRequestId {}", purchaseRequestId);
+                String status = purchaseCacheService.getPurchaseRequestStatus(purchaseRequestId);
+                LOG.info("Status for purchaseRequestId {} is {}", purchaseRequestId, status);
+
+                if (PurchaseRequestStatus.isConfirmedOrRejected(status)) {
+                    PurchaseRequestStatus resultStatus = PurchaseRequestStatus.valueOf(status.toUpperCase());
+                    if (future.complete(resultStatus)) {
+                        LOG.info("Purchase request {} completed with status: {}", purchaseRequestId, status);
+                    }
+                    scheduler.shutdown();
+                }
+            } catch (Exception e) {
+                LOG.error("Error during polling for request {}", purchaseRequestId, e);
+                if (future.completeExceptionally(e)) {
+                    scheduler.shutdown();
+                }
             }
         }, 0, pollingIntervalMillis, TimeUnit.MILLISECONDS);
-
-        scheduler.schedule(() -> {
-            if (!future.isDone()) {
-                LOG.info("Purchase request {} is still being processed. Will return PENDING, client must poll again...", purchaseRequestId);
-                future.complete(PENDING);
-            }
-            pollingTask.cancel(true);
-            scheduler.shutdown();
-        }, timeoutMillis, TimeUnit.MILLISECONDS);
 
         return future;
     }
