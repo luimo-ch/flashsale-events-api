@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 @Data
 public class FlashsalePurchaseResponseREST {
     String purchaseRequestId;
+    Long flashsaleEventId;
     String userId;
     String itemId;
     Integer quantity;

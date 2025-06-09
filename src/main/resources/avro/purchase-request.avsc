@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "name": "PurchaseRequest",
+  "name": "AvroPurchaseRequest",
   "namespace": "ch.luimode.flashsale",
   "fields": [
     { "name": "purchaseId", "type": "string" },

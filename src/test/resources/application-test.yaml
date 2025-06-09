@@ -8,9 +8,9 @@ spring:
 #  sql:
 #    init:
 #      mode: always
-#  kafka:
-#    properties:
-#      schema.registry.url: ${spring.kafka.properties.schema.registry.url} # dynamically set by test-containers
+  kafka:
+    properties:
+      schema.registry.url: http://localhost:8081 # dynamically overridden by test-containers
   data:
     redis:
       host: localhost # dynamically overridden by test-containers

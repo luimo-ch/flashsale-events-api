@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 
 import static ch.luimo.flashsale.flashsaleeventsapi.domain.PurchaseRequestStatus.PENDING;
@@ -31,12 +30,10 @@ public class PurchaseCacheService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final HashOperations<String, String, String> hashOps;
-    private final SetOperations<String, String> setOps;
 
     public PurchaseCacheService(RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
         this.hashOps = redisTemplate.opsForHash();
-        this.setOps = redisTemplate.opsForSet();
     }
 
     public String getPurchaseRequestStatus(String purchaseRequestId) {
@@ -87,7 +84,7 @@ public class PurchaseCacheService {
         String eventName = hashOps.get(key, KEY_EVENT_NAME);
         String stockQuantity = hashOps.get(key, KEY_STOCK_QUANTITY);
         String eventStatus = hashOps.get(key, KEY_EVENT_STATUS);
-        LOG.info(eventName + " " + stockQuantity + " " + eventStatus);
+        LOG.info("Event name {} stockQuantity:{} eventStatus:{}", eventName, stockQuantity, eventStatus);
     }
 
 }

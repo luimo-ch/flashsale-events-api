@@ -4,21 +4,31 @@ import ch.luimo.flashsale.flashsaleeventsapi.controller.FlashsalePurchaseRequest
 import ch.luimo.flashsale.flashsaleeventsapi.controller.FlashsalePurchaseResponseREST;
 import ch.luimo.flashsale.flashsaleeventsapi.controller.SourceType;
 import ch.luimo.flashsale.flashsaleeventsapi.domain.PurchaseRequestStatus;
+import ch.luimo.flashsale.flashsaleeventsapi.service.PublishingService;
 import ch.luimo.flashsale.flashsaleeventsapi.service.PurchaseCacheService;
 import ch.luimo.flashsale.flashsaleeventsapi.service.PurchaseRequestService;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class FlashSalePurchaseIntTest extends IntegrationTestBase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FlashSalePurchaseIntTest.class);
 
     @Autowired
     private PurchaseRequestService purchaseRequestService;
@@ -26,50 +36,60 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
     @MockitoSpyBean
     private PurchaseCacheService purchaseCacheService;
 
+    @MockitoSpyBean
+    private PublishingService publishingService;
+
     @Test
     public void testSubmitRequest_correctlySubmitsPurchaseRequest_returnsPendingStatus() {
-        FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(createPurchaseRequestREST());
+        long flashSaleId = 1L;
+        when(purchaseCacheService.isEventActive(flashSaleId)).thenReturn(true);
+        FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(createPurchaseRequestREST(flashSaleId));
 
-        // todo verify kafka msg was sent
         assertThat(flashsalePurchaseResponseREST.getStatus()).isEqualTo(PurchaseRequestStatus.PENDING);
+        verify(publishingService).publishPurchaseRequest(any());
+        assertEventPublished(flashsalePurchaseResponseREST.getPurchaseRequestId());
     }
 
     @Test
     public void testSubmitRequest_requestRejected_returnsRejection() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST();
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenReturn("rejected");
+        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
-        // todo verify kafka msg was NOT sent
+        verifyNoInteractions(publishingService);
         assertThat(flashsalePurchaseResponseREST.getStatus()).isEqualTo(PurchaseRequestStatus.REJECTED);
     }
 
     @Test
     public void testSubmitRequest_requestConfirmed_returnsConfirmation() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST();
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenReturn("confirmed");
+        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
-        // todo verify kafka msg was NOT sent
+        verifyNoInteractions(publishingService);
         assertThat(flashsalePurchaseResponseREST.getStatus()).isEqualTo(PurchaseRequestStatus.CONFIRMED);
     }
 
     @Test
-    public void testSubmitRequest_requestPending_returnsPendingState() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST();
+    public void testSubmitRequest_requestPending_returnsPendingStatus() {
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenReturn("pending");
+        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
-        // todo verify kafka msg was NOT sent
+        verifyNoInteractions(publishingService);
         assertThat(flashsalePurchaseResponseREST.getStatus()).isEqualTo(PurchaseRequestStatus.PENDING);
     }
 
     @Test
-    public void testSubmitRequest_requestPending_confirmedWithinPolling_returnsConfirmedState() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST();
+    public void testSubmitRequest_requestPending_confirmedWithinPolling_returnsConfirmedStatus() {
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
+        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenAnswer(new Answer<String>() {
                     private int count = 0;
@@ -82,12 +102,13 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
 
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
-        // todo verify NO kafka msg was published
+        verifyNoInteractions(publishingService);
         assertThat(flashsalePurchaseResponseREST.getStatus()).isEqualTo(PurchaseRequestStatus.CONFIRMED);
     }
 
-    private FlashsalePurchaseRequestRest createPurchaseRequestREST() {
+    private FlashsalePurchaseRequestRest createPurchaseRequestREST(long flashSaleEventId) {
         FlashsalePurchaseRequestRest purchaseRequest = new FlashsalePurchaseRequestRest();
+        purchaseRequest.setFlashsaleEventId(flashSaleEventId);
         purchaseRequest.setRequestedAt(OffsetDateTime.now());
         purchaseRequest.setPurchaseRequestId(UUID.randomUUID().toString());
         purchaseRequest.setQuantity(1);
@@ -95,5 +116,26 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
         purchaseRequest.setItemId(UUID.randomUUID().toString());
         purchaseRequest.setSourceType(SourceType.WEB);
         return purchaseRequest;
+    }
+
+    private void assertEventPublished(String expectedPurchaseRequestId) {
+        testConsumer.subscribe(purchaseRequestsTopic);
+        LOG.info("Starting await for purchase request with ID: {}", expectedPurchaseRequestId);
+        try {
+            Awaitility.await()
+                    .atMost(5, TimeUnit.SECONDS)
+                    .with().pollInterval(Duration.ofMillis(500))
+                    .untilAsserted(() -> {
+                        ConsumerRecords<String, String> records = testConsumer.poll(Duration.ofMillis(500));
+                        for (var record : records) {
+                            LOG.info("Successfully received record: key = {}, value = {}", record.key(), record.value());
+                            assertThat(record.key()).isEqualTo(expectedPurchaseRequestId);
+                        }
+                    });
+        } finally {
+            LOG.info("Closing Kafka consumer");
+            testConsumer.close();
+        }
+        LOG.info("Await finished for event: {}", expectedPurchaseRequestId);
     }
 }

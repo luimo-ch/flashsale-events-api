@@ -2,6 +2,7 @@ package ch.luimo.flashsale.flashsaleeventsapi;
 
 import ch.luimo.flashsale.flashsaleeventsapi.config.KafkaTestConsumerConfig;
 import ch.luimo.flashsale.flashsaleeventsapi.config.KafkaTestProducerConfig;
+import ch.luimo.flashsale.flashsaleeventsapi.config.PurchaseRequestsTestConsumer;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.AfterAll;
@@ -61,8 +62,11 @@ public abstract class IntegrationTestBase {
             .waitingFor(Wait.forHttp("/subjects"))
             .withStartupTimeout(Duration.of(120, ChronoUnit.SECONDS));
 
-    @Value("${application.kafka-topics.flashsale-events}")
-    protected String kafkaTopic;
+    @Value("${application.kafka-topics.purchase-requests}")
+    protected String purchaseRequestsTopic;
+
+    @Autowired
+    protected PurchaseRequestsTestConsumer testConsumer;
 
     @Autowired
     protected KafkaTestProducerConfig.FlashSaleEventsTestProducer testProducer;
@@ -93,7 +97,6 @@ public abstract class IntegrationTestBase {
                 topic = topic.configs(Map.of("cleanup.policy", "compact"));
             }
             adminClient.createTopics(List.of(topic)).all().get();
-            LOG.info("Created log-compacted topic {}", topicName);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create log-compacted topic " + topicName, e);
         }

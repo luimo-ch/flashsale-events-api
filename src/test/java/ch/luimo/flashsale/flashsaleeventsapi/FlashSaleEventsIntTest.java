@@ -1,8 +1,7 @@
-package ch.luimo.flashsale.flashsaleeventsapi.config;
+package ch.luimo.flashsale.flashsaleeventsapi;
 
 import ch.luimo.flashsale.eventservice.avro.AvroEventStatus;
 import ch.luimo.flashsale.eventservice.avro.AvroFlashSaleEvent;
-import ch.luimo.flashsale.flashsaleeventsapi.IntegrationTestBase;
 import ch.luimo.flashsale.flashsaleeventsapi.service.PurchaseCacheService;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ThrowingRunnable;
@@ -47,7 +46,7 @@ public class FlashSaleEventsIntTest extends IntegrationTestBase {
 
         LOG.info("Starting assertEventReceivedAndCached for event with ID: {}", expectedEventId);
         pollAndAssert(() -> {
-            LOG.info("Checking cache for event with ID: {}", expectedEventId);
+            LOG.info("Checking cache added event with ID: {}", expectedEventId);
             cacheService.printEvent(expectedEventId);
             assertTrue(cacheService.isEventActive(expectedEventId));
         });
@@ -57,7 +56,7 @@ public class FlashSaleEventsIntTest extends IntegrationTestBase {
     private void assertEventReceivedAndRemoved(Long expectedEventId) {
         LOG.info("Starting assertEventReceivedAndRemoved for event with ID: {}", expectedEventId);
         pollAndAssert(() -> {
-            LOG.info("Checking cache for event with ID: {}", expectedEventId);
+            LOG.info("Checking cache removed event ID: {}", expectedEventId);
             cacheService.printEvent(expectedEventId);
             assertFalse(cacheService.isEventActive(expectedEventId));
         });

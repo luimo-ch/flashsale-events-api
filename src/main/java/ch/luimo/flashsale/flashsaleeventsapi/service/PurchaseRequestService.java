@@ -3,6 +3,7 @@ package ch.luimo.flashsale.flashsaleeventsapi.service;
 import ch.luimo.flashsale.flashsaleeventsapi.controller.FlashsalePurchaseRequestRest;
 import ch.luimo.flashsale.flashsaleeventsapi.controller.FlashsalePurchaseResponseREST;
 import ch.luimo.flashsale.flashsaleeventsapi.domain.PurchaseRequestStatus;
+import ch.luimo.flashsale.flashsaleeventsapi.exception.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,13 +22,18 @@ public class PurchaseRequestService {
     private static final Long pollingIntervalMillis = 500L;
 
     private final PurchaseCacheService purchaseCacheService;
+    private final PublishingService publishingService;
 
-    public PurchaseRequestService(PurchaseCacheService purchaseCacheService) {
+    public PurchaseRequestService(PurchaseCacheService purchaseCacheService,  PublishingService publishingService) {
         this.purchaseCacheService = purchaseCacheService;
+        this.publishingService = publishingService;
     }
 
     public FlashsalePurchaseResponseREST submitPurchase(FlashsalePurchaseRequestRest purchaseRequestRest) {
         String purchaseRequestId = purchaseRequestRest.getPurchaseRequestId();
+
+        validatePurchaseRequest(purchaseRequestRest);
+
         String requestStatus = purchaseCacheService.getPurchaseRequestStatus(purchaseRequestId);
 
         if (PurchaseRequestStatus.isRejected(requestStatus)) {
@@ -94,15 +100,22 @@ public class PurchaseRequestService {
         return future;
     }
 
+    private void validatePurchaseRequest(FlashsalePurchaseRequestRest purchaseRequest) {
+        Long flashsaleEventId = purchaseRequest.getFlashsaleEventId();
+        if (!purchaseCacheService.isEventActive(flashsaleEventId)) {
+            throw new BadRequestException("Flashsale event is not active or does not exist: " + flashsaleEventId);
+        }
+    }
+
     private void publishPurchaseRequest(FlashsalePurchaseRequestRest purchaseRequestRest) {
-        // publish event to kafka
-        LOG.info("Publishing to kafka purchase request with ID {}", purchaseRequestRest.getPurchaseRequestId());
+        publishingService.publishPurchaseRequest(purchaseRequestRest);
     }
 
     private FlashsalePurchaseResponseREST mapToFlashsalePurchaseRejectionREST(FlashsalePurchaseRequestRest purchaseRequestRest,
                                                                               String rejectionReason) {
         FlashsalePurchaseResponseREST response = new FlashsalePurchaseResponseREST();
         response.setPurchaseRequestId(purchaseRequestRest.getPurchaseRequestId());
+        response.setFlashsaleEventId(purchaseRequestRest.getFlashsaleEventId());
         response.setQuantity(purchaseRequestRest.getQuantity());
         response.setRequestedAt(purchaseRequestRest.getRequestedAt());
         response.setSourceType(purchaseRequestRest.getSourceType());
@@ -118,6 +131,7 @@ public class PurchaseRequestService {
                                                                              PurchaseRequestStatus status) {
         FlashsalePurchaseResponseREST response = new FlashsalePurchaseResponseREST();
         response.setPurchaseRequestId(purchaseRequestRest.getPurchaseRequestId());
+        response.setFlashsaleEventId(purchaseRequestRest.getFlashsaleEventId());
         response.setQuantity(purchaseRequestRest.getQuantity());
         response.setRequestedAt(purchaseRequestRest.getRequestedAt());
         response.setSourceType(purchaseRequestRest.getSourceType());

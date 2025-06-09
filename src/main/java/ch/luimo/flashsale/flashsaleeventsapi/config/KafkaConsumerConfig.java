@@ -1,6 +1,6 @@
 package ch.luimo.flashsale.flashsaleeventsapi.config;
 
-import ch.luimode.flashsale.PurchaseRequest;
+import ch.luimo.flashsale.eventservice.avro.AvroFlashSaleEvent;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -86,8 +86,8 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PurchaseRequest> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, PurchaseRequest> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, AvroFlashSaleEvent> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, AvroFlashSaleEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;

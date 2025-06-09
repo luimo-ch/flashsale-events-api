@@ -1,6 +1,6 @@
 package ch.luimo.flashsale.flashsaleeventsapi.config;
 
-import ch.luimode.flashsale.PurchaseRequest;
+import ch.luimode.flashsale.AvroPurchaseRequest;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +66,12 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, PurchaseRequest> producerFactory() {
+    public ProducerFactory<String, AvroPurchaseRequest> producerFactory() {
         return new DefaultKafkaProducerFactory<>(kafkaProducerConfig());
     }
 
     @Bean
-    public KafkaTemplate<String, PurchaseRequest> kafkaTemplate(ProducerFactory<String, PurchaseRequest> producerFactory) {
+    public KafkaTemplate<String, AvroPurchaseRequest> kafkaTemplate(ProducerFactory<String, AvroPurchaseRequest> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 
