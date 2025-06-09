@@ -17,6 +17,9 @@ public class PurchaseRequestService {
 
     private static final Logger LOG = LoggerFactory.getLogger(PurchaseRequestService.class);
 
+    private static final Long pollingTimeoutMillis = 3000L;
+    private static final Long pollingIntervalMillis = 500L;
+
     private final PurchaseCacheService purchaseCacheService;
 
     public PurchaseRequestService(PurchaseCacheService purchaseCacheService) {
@@ -57,14 +60,12 @@ public class PurchaseRequestService {
         CompletableFuture<PurchaseRequestStatus> future = new CompletableFuture<>();
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
-        final long timeoutMillis = 5000;
-        final long pollingIntervalMillis = 500;
         final long startTime = System.currentTimeMillis();
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 // Check if we've exceeded the timeout
-                if (System.currentTimeMillis() - startTime >= timeoutMillis) {
+                if (System.currentTimeMillis() - startTime >= pollingTimeoutMillis) {
                     if (future.complete(PurchaseRequestStatus.PENDING)) {
                         LOG.debug("Polling timed out after 5 seconds for request {}", purchaseRequestId);
                     }

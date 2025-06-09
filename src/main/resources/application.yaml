@@ -1,3 +1,8 @@
+application:
+  kafka-topics:
+    purchase-requests: flashsale.purchase.requests
+    flashsale-events: flashsale.events
+
 spring:
   application.name: flashsale-events-api
   cloud:
@@ -7,3 +12,12 @@ spring:
       enabled: false
     core:
       enabled: false
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        enable.idempotence: true
+      acks: all
+    consumer:
+      group-id: flashsale-events-api-consumer-group

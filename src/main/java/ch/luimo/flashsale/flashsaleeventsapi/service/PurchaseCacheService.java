@@ -1,5 +1,7 @@
 package ch.luimo.flashsale.flashsaleeventsapi.service;
 
+import ch.luimo.flashsale.eventservice.avro.AvroFlashSaleEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.HashOperations;
@@ -14,9 +16,18 @@ public class PurchaseCacheService {
 
     private static final Logger LOG = LoggerFactory.getLogger(PurchaseCacheService.class);
 
-    private static final String PURCHASE_CACHE_KEY_PREFIX = "purchase:";
-    private static final String STATUS = "status";
-    private static final String REASON = "reason";
+    private static final String EVENT_HASH_PREFIX = "flashsale-event-api:event:";
+    private static final String KEY_EVENT_NAME = "eventName";
+    private static final String KEY_START_TIME = "startTime";
+    private static final String KEY_DURATION = "duration";
+    private static final String KEY_PRODUCTID = "productId";
+    private static final String KEY_STOCK_QUANTITY = "stockQuantity";
+    private static final String KEY_MAX_PER_CUSTOMER = "maxPerCustomer";
+    private static final String KEY_EVENT_STATUS = "eventStatus";
+
+    private static final String PURCHASE_CACHE_KEY_PREFIX = "flashsale-event-api:purchase:";
+    private static final String PURCHASE_REQUEST_STATUS = "status";
+    private static final String PURCHASE_REQUEST_REJECTION_REASON = "reason";
 
     private final RedisTemplate<String, String> redisTemplate;
     private final HashOperations<String, String, String> hashOps;
@@ -30,18 +41,53 @@ public class PurchaseCacheService {
 
     public String getPurchaseRequestStatus(String purchaseRequestId) {
         String key = PURCHASE_CACHE_KEY_PREFIX + purchaseRequestId;
-        return hashOps.get(key, STATUS);
+        return hashOps.get(key, PURCHASE_REQUEST_STATUS);
     }
 
     public String getRejectionReason(String purchaseRequestId) {
         String key = PURCHASE_CACHE_KEY_PREFIX + purchaseRequestId;
-        return hashOps.get(key, REASON);
+        return hashOps.get(key, PURCHASE_REQUEST_REJECTION_REASON);
     }
 
     public void setPendingStatus(String purchaseRequestId) {
         String key = PURCHASE_CACHE_KEY_PREFIX + purchaseRequestId;
-        hashOps.put(key, STATUS, PENDING.name().toLowerCase());
+        hashOps.put(key, PURCHASE_REQUEST_STATUS, PENDING.name().toLowerCase());
     }
 
+    public void addEvent(AvroFlashSaleEvent event) {
+        String key = EVENT_HASH_PREFIX + event.getId();
+        hashOps.put(key, KEY_EVENT_STATUS, event.getEventStatus().name());
+        hashOps.put(key, KEY_EVENT_NAME, event.getEventName());
+        hashOps.put(key, KEY_START_TIME, String.valueOf(event.getStartTime()));
+        hashOps.put(key, KEY_DURATION, String.valueOf(event.getDuration()));
+        hashOps.put(key, KEY_PRODUCTID, event.getProductId());
+        hashOps.put(key, KEY_STOCK_QUANTITY, String.valueOf(event.getStockQuantity()));
+        hashOps.put(key, KEY_MAX_PER_CUSTOMER, String.valueOf(event.getMaxPerCustomer()));
+    }
+
+    public void removeEvent(long eventId) {
+        String key = EVENT_HASH_PREFIX + eventId;
+        Boolean deleted = redisTemplate.delete(key);
+        if(deleted){
+            LOG.info("Event with id {} has been deleted", eventId);
+        }else {
+            LOG.warn("Event with id {} not found!", eventId);
+        }
+    }
+
+    public boolean isEventActive(long eventId) {
+        String key = EVENT_HASH_PREFIX + eventId;
+        LOG.info("Checking key: {}", key);
+        String eventStatus = hashOps.get(key, KEY_EVENT_STATUS);
+        return StringUtils.isNotBlank(eventStatus);
+    }
+
+    public void printEvent(long id) {
+        String key = EVENT_HASH_PREFIX + id;
+        String eventName = hashOps.get(key, KEY_EVENT_NAME);
+        String stockQuantity = hashOps.get(key, KEY_STOCK_QUANTITY);
+        String eventStatus = hashOps.get(key, KEY_EVENT_STATUS);
+        LOG.info(eventName + " " + stockQuantity + " " + eventStatus);
+    }
 
 }

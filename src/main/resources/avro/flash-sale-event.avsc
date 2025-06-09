@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "AvroFlashSaleEvent",
+  "namespace": "ch.luimo.flashsale.eventservice.avro",
+  "fields": [
+    { "name": "id", "type": "long"},
+    { "name": "eventName", "type": "string" },
+    { "name": "startTime", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "duration", "type": "int" },
+    { "name": "productId", "type": "string" },
+    { "name": "sellerId", "type": "string" },
+    { "name": "stockQuantity", "type": "int" },
+    { "name": "maxPerCustomer", "type": "int" },
+    {
+      "name": "eventStatus",
+      "type": {
+        "type": "enum",
+        "name": "AvroEventStatus",
+        "symbols": ["CREATED", "STARTED", "ENDED", "CANCELLED"]
+      }
+    }
+  ]
+}

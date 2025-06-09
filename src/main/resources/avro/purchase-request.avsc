@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "PurchaseRequest",
+  "namespace": "ch.luimode.flashsale",
+  "fields": [
+    { "name": "purchaseId", "type": "string" },
+    { "name": "userId", "type": "string" },
+    { "name": "itemId", "type": "string" },
+    { "name": "quantity", "type": "int" },
+    { "name": "requestedAt", "type": { "type": "long", "logicalType": "timestamp-millis" } },
+    { "name": "source", "type": { "type": "enum", "name": "SourceType", "symbols": ["WEB", "MOBILE", "API"] } }
+  ]
+}
