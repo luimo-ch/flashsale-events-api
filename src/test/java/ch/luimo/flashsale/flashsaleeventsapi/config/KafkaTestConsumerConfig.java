@@ -1,14 +1,18 @@
 package ch.luimo.flashsale.flashsaleeventsapi.config;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import static ch.luimo.flashsale.flashsaleeventsapi.IntegrationTestBase.BOOTSTRAP_SERVERS_PROPERTY;
 import static ch.luimo.flashsale.flashsaleeventsapi.IntegrationTestBase.SCHEMA_REGISTRY_PROPERTY;
@@ -16,21 +20,44 @@ import static ch.luimo.flashsale.flashsaleeventsapi.IntegrationTestBase.SCHEMA_R
 @TestConfiguration
 public class KafkaTestConsumerConfig {
 
-    @Value("${spring.kafka.consumer.group-id}")
-    private String consumerGroupId;
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaConsumerConfig.class);
+
+    private final KafkaProperties kafkaProperties;
+
+    public KafkaTestConsumerConfig(KafkaProperties kafkaProperties) {
+        this.kafkaProperties = kafkaProperties;
+    }
 
     @Bean
-    public PurchaseRequestsTestConsumer flashSaleEventsTestConsumer() {
+    public Map<String, Object> kafkaConsumerProperties() {
+        Map<String, Object> props = new HashMap<>();
         String bootstrapServers = System.getProperty(BOOTSTRAP_SERVERS_PROPERTY);
-        Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaProperties.getConsumer().getGroupId());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         props.put("schema.registry.url", System.getProperty(SCHEMA_REGISTRY_PROPERTY));
+        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+        props.put("value.deserializer.type", "specific");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+        return props;
+    }
+
+    @Bean
+    public Map<String, Object> kafkaProducerProperties() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getProperty(BOOTSTRAP_SERVERS_PROPERTY));
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getKeySerializer());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getValueSerializer());
+        props.put("schema.registry.url", System.getProperty(SCHEMA_REGISTRY_PROPERTY));
+        return props;
+    }
+
+    // for the purpose of manually polling messages
+    @Bean
+    public PurchaseRequestsTestConsumer flashSaleEventsTestConsumer(Map<String, Object> kafkaConsumerProperties) {
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerProperties);
         return new PurchaseRequestsTestConsumer(consumer);
     }
 }

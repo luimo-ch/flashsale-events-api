@@ -19,7 +19,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-@Profile("dev")
 @Configuration
 @EnableConfigurationProperties(KafkaProperties.class)
 public class KafkaConsumerConfig {
@@ -32,16 +31,16 @@ public class KafkaConsumerConfig {
         this.kafkaProperties = kafkaProperties;
     }
 
-    @Value("${application.kafka-consumer-api-key}")
+    @Value("${application.kafka-consumer-api-key:foo}")
     private String kafkaConsumerApiKey;
 
-    @Value("${application.kafka-consumer-api-secret}")
+    @Value("${application.kafka-consumer-api-secret:foo}")
     private String kafkaConsumerApiSecret;
 
-    @Value("${application.schema-api-key}")
+    @Value("${application.schema-api-key:foo}")
     private String schemaApiKey;
 
-    @Value("${application.schema-api-secret}")
+    @Value("${application.schema-api-secret:foo}")
     private String schemaApiSecret;
 
     @Bean
@@ -54,7 +53,8 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public Map<String, Object> consumerConfigs() {
+    @Profile("dev")
+    public Map<String, Object> kafkaConsumerConfig() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -78,18 +78,19 @@ public class KafkaConsumerConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, Object> consumerFactory() {
+    public ConsumerFactory<String, Object> consumerFactory(Map<String, Object> kafkaConsumerProperties) {
         KafkaAvroDeserializer avroDeserializer = new KafkaAvroDeserializer();
-        avroDeserializer.configure(consumerConfigs(), false);
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs(),
+        avroDeserializer.configure(kafkaConsumerProperties, false);
+        return new DefaultKafkaConsumerFactory<>(kafkaConsumerProperties,
                 new StringDeserializer(), avroDeserializer);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, AvroFlashSaleEvent> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, AvroFlashSaleEvent> kafkaListenerContainerFactory(
+            ConsumerFactory<String, Object> consumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, AvroFlashSaleEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerFactory);
         return factory;
     }
 

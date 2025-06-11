@@ -15,11 +15,11 @@ public class KafkaTestProducerConfig {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaTestProducerConfig.class);
 
     @Autowired
-    private KafkaTemplate<String, AvroFlashSaleEvent> kafkaTemplate;
+    private KafkaTemplate<String, AvroFlashSaleEvent> flashSaleEventKafkaTemplate;
 
     @Bean
     public FlashSaleEventsTestProducer flashSaleEventsTestProducer() {
-        return new FlashSaleEventsTestProducer(kafkaTemplate);
+        return new FlashSaleEventsTestProducer(flashSaleEventKafkaTemplate);
     }
 
     public static class FlashSaleEventsTestProducer {
