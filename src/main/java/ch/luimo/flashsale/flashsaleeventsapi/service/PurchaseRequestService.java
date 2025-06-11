@@ -105,6 +105,12 @@ public class PurchaseRequestService {
         if (!purchaseCacheService.isEventActive(flashsaleEventId)) {
             throw new BadRequestException("Flashsale event is not active or does not exist: " + flashsaleEventId);
         }
+
+        int perCustomerPurchaseLimit = purchaseCacheService.getPerCustomerPurchaseLimit(flashsaleEventId);
+        if (purchaseRequest.getQuantity() > perCustomerPurchaseLimit) {
+            throw new BadRequestException("The requested purchase amount " + purchaseRequest.getQuantity() +
+                    " exceeds the per-customer limit of " + perCustomerPurchaseLimit + " items!");
+        }
     }
 
     private void publishPurchaseRequest(FlashsalePurchaseRequestRest purchaseRequestRest) {

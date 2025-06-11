@@ -74,9 +74,17 @@ public class PurchaseCacheService {
 
     public boolean isEventActive(long eventId) {
         String key = EVENT_HASH_PREFIX + eventId;
-        LOG.info("Checking key: {}", key);
         String eventStatus = hashOps.get(key, KEY_EVENT_STATUS);
         return StringUtils.isNotBlank(eventStatus);
+    }
+
+    public int getPerCustomerPurchaseLimit(long eventId) {
+        String key = EVENT_HASH_PREFIX + eventId;
+        String maxPerCustomerStr = hashOps.get(key, KEY_MAX_PER_CUSTOMER);
+        if(StringUtils.isBlank(maxPerCustomerStr)){
+            throw new IllegalArgumentException("Max per customer limit is empty");
+        }
+        return Integer.parseInt(maxPerCustomerStr);
     }
 
     public void printEvent(long id) {
