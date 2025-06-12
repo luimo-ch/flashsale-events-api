@@ -3,11 +3,11 @@ package ch.luimo.flashsale.flashsaleeventsapi.config;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -18,14 +18,21 @@ import static ch.luimo.flashsale.flashsaleeventsapi.IntegrationTestBase.BOOTSTRA
 import static ch.luimo.flashsale.flashsaleeventsapi.IntegrationTestBase.SCHEMA_REGISTRY_PROPERTY;
 
 @TestConfiguration
-public class KafkaTestConsumerConfig {
+public class KafkaTestConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KafkaConsumerConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaTestConfig.class);
 
-    private final KafkaProperties kafkaProperties;
+    @Autowired
+    private KafkaProperties kafkaProperties;
 
-    public KafkaTestConsumerConfig(KafkaProperties kafkaProperties) {
-        this.kafkaProperties = kafkaProperties;
+    @Bean
+    public Map<String, Object> kafkaProducerProperties() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getProperty(BOOTSTRAP_SERVERS_PROPERTY));
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getKeySerializer());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getValueSerializer());
+        props.put("schema.registry.url", System.getProperty(SCHEMA_REGISTRY_PROPERTY));
+        return props;
     }
 
     @Bean
@@ -44,20 +51,5 @@ public class KafkaTestConsumerConfig {
         return props;
     }
 
-    @Bean
-    public Map<String, Object> kafkaProducerProperties() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, System.getProperty(BOOTSTRAP_SERVERS_PROPERTY));
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getKeySerializer());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getValueSerializer());
-        props.put("schema.registry.url", System.getProperty(SCHEMA_REGISTRY_PROPERTY));
-        return props;
-    }
 
-    // for the purpose of manually polling messages
-    @Bean
-    public PurchaseRequestsTestConsumer flashSaleEventsTestConsumer(Map<String, Object> kafkaConsumerProperties) {
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerProperties);
-        return new PurchaseRequestsTestConsumer(consumer);
-    }
 }

@@ -31,19 +31,20 @@ public class KafkaConsumerConfig {
         this.kafkaProperties = kafkaProperties;
     }
 
-    @Value("${application.kafka-consumer-api-key:foo}")
+    @Value("${application.kafka-consumer-api-key:fake-consumer-api-key}")
     private String kafkaConsumerApiKey;
 
-    @Value("${application.kafka-consumer-api-secret:foo}")
+    @Value("${application.kafka-consumer-api-secret:fake-consumer-api-secret}")
     private String kafkaConsumerApiSecret;
 
-    @Value("${application.schema-api-key:foo}")
+    @Value("${application.schema-api-key:fake-schema-api-key}")
     private String schemaApiKey;
 
-    @Value("${application.schema-api-secret:foo}")
+    @Value("${application.schema-api-secret:fake-schema-api-secret}")
     private String schemaApiSecret;
 
     @Bean
+    @Profile("dev")
     public String kafkaJaasConfig() {
         return String.format(
                 "org.apache.kafka.common.security.plain.PlainLoginModule required username='%s' password='%s';",

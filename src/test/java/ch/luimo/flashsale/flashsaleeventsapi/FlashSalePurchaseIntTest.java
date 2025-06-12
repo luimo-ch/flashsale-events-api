@@ -9,6 +9,7 @@ import ch.luimo.flashsale.flashsaleeventsapi.service.PurchaseCacheService;
 import ch.luimo.flashsale.flashsaleeventsapi.service.PurchaseRequestService;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -30,6 +31,8 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlashSalePurchaseIntTest.class);
 
+    private static final Long FLASH_SALE_ID = 1L;
+
     @Autowired
     private PurchaseRequestService purchaseRequestService;
 
@@ -39,11 +42,15 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
     @MockitoSpyBean
     private PublishingService publishingService;
 
+    @BeforeEach
+    public void setup() {
+        doReturn(true).when(purchaseCacheService).isEventActive(FLASH_SALE_ID);
+        doReturn(100).when(purchaseCacheService).getPerCustomerPurchaseLimit(FLASH_SALE_ID);
+    }
+
     @Test
     public void testSubmitRequest_correctlySubmitsPurchaseRequest_returnsPendingStatus() {
-        long flashSaleId = 1L;
-        when(purchaseCacheService.isEventActive(flashSaleId)).thenReturn(true);
-        FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(createPurchaseRequestREST(flashSaleId));
+        FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(createPurchaseRequestREST(FLASH_SALE_ID));
 
         assertThat(flashsalePurchaseResponseREST.getStatus()).isEqualTo(PurchaseRequestStatus.PENDING);
         verify(publishingService).publishPurchaseRequest(any());

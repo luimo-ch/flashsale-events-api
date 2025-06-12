@@ -13,19 +13,19 @@ public class PublishingService {
 
     private static final Logger LOG = LoggerFactory.getLogger(PublishingService.class);
 
-    private final KafkaTemplate<String, AvroPurchaseRequest> kafkaTemplate;
+    private final KafkaTemplate<String, AvroPurchaseRequest> purchaseRequestKafkaTemplate;
 
     @Value("${application.kafka-topics.purchase-requests}")
     private String purchaseRequestsTopic;
 
-    public PublishingService(KafkaTemplate<String, AvroPurchaseRequest> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public PublishingService(KafkaTemplate<String, AvroPurchaseRequest> purchaseRequestKafkaTemplate) {
+        this.purchaseRequestKafkaTemplate = purchaseRequestKafkaTemplate;
     }
 
     public void publishPurchaseRequest(FlashsalePurchaseRequestRest purchaseRequest) {
         AvroPurchaseRequest event = toAvroPurchaseRequest(purchaseRequest);
         LOG.info("Publishing purchase request {} to topic: {}", purchaseRequestsTopic, event);
-        kafkaTemplate.send(purchaseRequestsTopic, String.valueOf(purchaseRequest.getPurchaseRequestId()), event)
+        purchaseRequestKafkaTemplate.send(purchaseRequestsTopic, String.valueOf(purchaseRequest.getPurchaseRequestId()), event)
                 .thenRun(() -> LOG.info("Publishing flash sale event finished: {}", event))
                 .exceptionally(ex -> {
                     LOG.error("Error publishing flash sale event", ex);

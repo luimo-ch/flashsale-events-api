@@ -2,17 +2,21 @@ package ch.luimo.flashsale.flashsaleeventsapi.config;
 
 import ch.luimo.flashsale.eventservice.avro.AvroFlashSaleEvent;
 import ch.luimode.flashsale.AvroPurchaseRequest;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @EnableKafka
@@ -48,7 +52,10 @@ public class KafkaProducerConfig {
         );
     }
 
-//    public Map<String, Object> kafkaProducerConfig() {
+    // TODO, define kafkaProducerProperties for "local" / "docker"
+//    @Bean
+//    @Profile("dev")
+//    public Map<String, Object> kafkaProducerProperties() {
 //        Map<String, Object> props = new HashMap<>();
 //        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
 //        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getKeySerializer());
@@ -64,6 +71,7 @@ public class KafkaProducerConfig {
 
     @Bean
     public ProducerFactory<String, AvroPurchaseRequest> purchaseRequestProducerFactory(Map<String, Object> kafkaProducerProperties) {
+        LOG.info("Creating producer factory from props '{}'", kafkaProducerProperties);
         return new DefaultKafkaProducerFactory<>(kafkaProducerProperties);
     }
 

@@ -24,7 +24,7 @@ public class PurchaseRequestService {
     private final PurchaseCacheService purchaseCacheService;
     private final PublishingService publishingService;
 
-    public PurchaseRequestService(PurchaseCacheService purchaseCacheService,  PublishingService publishingService) {
+    public PurchaseRequestService(PurchaseCacheService purchaseCacheService, PublishingService publishingService) {
         this.purchaseCacheService = purchaseCacheService;
         this.publishingService = publishingService;
     }

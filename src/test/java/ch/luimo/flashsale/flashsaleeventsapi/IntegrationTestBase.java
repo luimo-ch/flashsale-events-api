@@ -1,8 +1,8 @@
 package ch.luimo.flashsale.flashsaleeventsapi;
 
-import ch.luimo.flashsale.flashsaleeventsapi.config.KafkaTestConsumerConfig;
-import ch.luimo.flashsale.flashsaleeventsapi.config.KafkaTestProducerConfig;
-import ch.luimo.flashsale.flashsaleeventsapi.config.PurchaseRequestsTestConsumer;
+import ch.luimo.flashsale.flashsaleeventsapi.config.GenericTestConsumerConfig;
+import ch.luimo.flashsale.flashsaleeventsapi.config.KafkaTestConfig;
+import ch.luimo.flashsale.flashsaleeventsapi.config.FlashSaleEventsTestProducerConfig;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.AfterAll;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 @SpringBootTest
-@Import({KafkaTestProducerConfig.class, KafkaTestConsumerConfig.class})
+@Import({KafkaTestConfig.class, GenericTestConsumerConfig.class, FlashSaleEventsTestProducerConfig.class})
 @ActiveProfiles("test")
 public abstract class IntegrationTestBase {
 
@@ -66,10 +66,10 @@ public abstract class IntegrationTestBase {
     protected String purchaseRequestsTopic;
 
     @Autowired
-    protected PurchaseRequestsTestConsumer testConsumer;
+    protected GenericTestConsumerConfig.GenericTestConsumer testConsumer;
 
     @Autowired
-    protected KafkaTestProducerConfig.FlashSaleEventsTestProducer testProducer;
+    protected FlashSaleEventsTestProducerConfig.FlashSaleEventsTestProducer flashSaleEventsTestProducer;
 
     @BeforeAll
     static void startContainers() {

@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @TestConfiguration
-public class KafkaTestProducerConfig {
+public class FlashSaleEventsTestProducerConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KafkaTestProducerConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaConsumerConfig.class);
 
     @Autowired
     private KafkaTemplate<String, AvroFlashSaleEvent> flashSaleEventKafkaTemplate;
@@ -34,7 +34,7 @@ public class KafkaTestProducerConfig {
         }
 
         public void publishEvent(AvroFlashSaleEvent event) {
-            LOG.info("Publishing test event to topic {}: {}", flashSaleEventsTopic, event);
+            LOG.info("Publishing test event to topic {}: event ID {}", flashSaleEventsTopic, event.getId());
             kafkaTemplate.send(flashSaleEventsTopic, String.valueOf(event.getId()), event)
                     .thenRun(() -> LOG.info("Publishing flash sale event finished: {}", event))
                     .exceptionally(ex -> {

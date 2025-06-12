@@ -30,13 +30,13 @@ public class FlashSaleEventsIntTest extends IntegrationTestBase {
         AvroFlashSaleEvent avroFlashSaleEvent = flashSaleEventOf();
         assertFalse(cacheService.isEventActive(avroFlashSaleEvent.getId()));
 
-        testProducer.publishEvent(avroFlashSaleEvent);
+        flashSaleEventsTestProducer.publishEvent(avroFlashSaleEvent);
 
         LOG.info("Test event published: {}", avroFlashSaleEvent);
         assertEventReceivedAndCached(avroFlashSaleEvent.getId());
 
         avroFlashSaleEvent.setEventStatus(AvroEventStatus.ENDED);
-        testProducer.publishEvent(avroFlashSaleEvent);
+        flashSaleEventsTestProducer.publishEvent(avroFlashSaleEvent);
         LOG.info("Test event published: {}", avroFlashSaleEvent);
         assertEventReceivedAndRemoved(avroFlashSaleEvent.getId());
     }
