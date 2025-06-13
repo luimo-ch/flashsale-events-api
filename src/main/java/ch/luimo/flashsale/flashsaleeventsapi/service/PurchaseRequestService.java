@@ -32,7 +32,7 @@ public class PurchaseRequestService {
     public FlashsalePurchaseResponseREST submitPurchase(FlashsalePurchaseRequestRest purchaseRequestRest) {
         String purchaseRequestId = purchaseRequestRest.getPurchaseRequestId();
 
-//        validatePurchaseRequest(purchaseRequestRest);
+        validatePurchaseRequest(purchaseRequestRest);
 
         String requestStatus = purchaseCacheService.getPurchaseRequestStatus(purchaseRequestId);
 
