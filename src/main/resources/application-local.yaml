@@ -1,9 +1,10 @@
 # configuration for local development - using dockerized dependencies (see docker-compose.yml)
 spring:
-  cloud:
-    gcp:
-      credentials:
-        location: file:${GOOGLE_APPLICATION_CREDENTIALS_PURCHASE_PROCESSOR}
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      schema.registry.url: localhost:8081
+      security.protocol: PLAINTEXT
   data:
     redis:
       host: localhost

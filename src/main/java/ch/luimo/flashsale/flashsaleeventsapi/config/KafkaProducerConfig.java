@@ -5,11 +5,11 @@ import ch.luimode.flashsale.AvroPurchaseRequest;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -26,11 +26,8 @@ public class KafkaProducerConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(KafkaProducerConfig.class);
 
-    private final KafkaProperties kafkaProperties;
-
-    public KafkaProducerConfig(KafkaProperties kafkaProperties) {
-        this.kafkaProperties = kafkaProperties;
-    }
+    @Autowired
+    private KafkaProperties kafkaProperties;
 
     @Value("${application.kafka-api-key:foo}")
     private String kafkaApiKey;
@@ -52,7 +49,18 @@ public class KafkaProducerConfig {
         );
     }
 
-    // TODO, define kafkaProducerProperties for "local" / "docker"
+    @Bean
+    @Profile("local")
+    public Map<String, Object> kafkaProducerProperties() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getKeySerializer());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, kafkaProperties.getProducer().getValueSerializer());
+        props.put("schema.registry.url", kafkaProperties.getProperties().get("schema.registry.url"));
+        return props;
+    }
+
+
 //    @Bean
 //    @Profile("dev")
 //    public Map<String, Object> kafkaProducerProperties() {
