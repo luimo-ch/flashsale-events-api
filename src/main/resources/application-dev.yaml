@@ -6,9 +6,10 @@ spring:
         location: file:${GOOGLE_APPLICATION_CREDENTIALS_PURCHASE_PROCESSOR}
 #  kafka:
 #    bootstrap-servers: localhost:9092
-#    properties:
-#      schema.registry.url: localhost:8081
-#      security.protocol: PLAINTEXT
+#    properties: #TODO
+##      security.protocol: SASL_SSL
+##      sasl.mechanism: PLAIN
+##      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_API_KEY}" password="${KAFKA_API_SECRET}";
 #  data:
 #    redis:
 #      host: localhost

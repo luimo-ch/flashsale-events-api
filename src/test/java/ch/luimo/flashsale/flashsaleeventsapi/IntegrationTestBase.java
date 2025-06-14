@@ -1,7 +1,6 @@
 package ch.luimo.flashsale.flashsaleeventsapi;
 
 import ch.luimo.flashsale.flashsaleeventsapi.config.GenericTestConsumerConfig;
-import ch.luimo.flashsale.flashsaleeventsapi.config.KafkaTestConfig;
 import ch.luimo.flashsale.flashsaleeventsapi.config.FlashSaleEventsTestProducerConfig;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -26,12 +25,12 @@ import java.util.List;
 import java.util.Map;
 
 @SpringBootTest
-@Import({KafkaTestConfig.class, GenericTestConsumerConfig.class, FlashSaleEventsTestProducerConfig.class})
+@Import({GenericTestConsumerConfig.class, FlashSaleEventsTestProducerConfig.class})
 @ActiveProfiles("test")
 public abstract class IntegrationTestBase {
 
-    public static final String BOOTSTRAP_SERVERS_PROPERTY = "spring.kafka.bootstrap-servers";
-    public static final String SCHEMA_REGISTRY_PROPERTY = "spring.kafka.properties.schema.registry.url";
+    public static final String BOOTSTRAP_SERVERS_PROPERTY = "KAFKA_BOOTSTRAP_SERVERS";
+    public static final String SCHEMA_REGISTRY_PROPERTY = "SCHEMA_REGISTRY_URL";
 
     private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestBase.class);
 

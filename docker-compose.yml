@@ -56,10 +56,10 @@ services:
       - "5005:5005"
     environment: # override 'local' props to use containerized deps while running in the container
       - SPRING_PROFILES_ACTIVE=local
-      - SPRING_DATA_REDIS_HOST=redis # use docker network when running in container
-      - SPRING_DATA_REDIS_PORT=6379
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - SPRING_KAFKA_PROPERTIES_SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - REDIS_HOST=redis # use docker network when running in container
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
       - JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     depends_on:
       - redis

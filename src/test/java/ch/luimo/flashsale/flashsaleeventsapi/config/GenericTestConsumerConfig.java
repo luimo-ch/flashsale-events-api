@@ -4,12 +4,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Map;
 
 @TestConfiguration
 public class GenericTestConsumerConfig {
@@ -18,8 +18,8 @@ public class GenericTestConsumerConfig {
 
     // for the purpose of manually polling messages
     @Bean
-    public GenericTestConsumer genericTestConsumer(Map<String, Object> kafkaConsumerProperties) {
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaConsumerProperties);
+    public GenericTestConsumer genericTestConsumer(KafkaProperties kafkaProperties) {
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(kafkaProperties.buildConsumerProperties());
         return new GenericTestConsumer(consumer);
     }
 
