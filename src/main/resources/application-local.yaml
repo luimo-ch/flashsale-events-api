@@ -1,4 +1,5 @@
-# configuration for local development - using dockerized dependencies (see docker-compose.yml)
+# configuration for local development with dockerized dependencies (see docker-compose.yml)
+# NOTE: 'local' is used for running the service outside the container!
 spring:
   kafka:
     bootstrap-servers: localhost:9092
