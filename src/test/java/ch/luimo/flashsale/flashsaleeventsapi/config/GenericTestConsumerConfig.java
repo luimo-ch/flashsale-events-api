@@ -14,7 +14,7 @@ import java.util.Collections;
 @TestConfiguration
 public class GenericTestConsumerConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KafkaConsumerConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GenericTestConsumerConfig.class);
 
     // for the purpose of manually polling messages
     @Bean
@@ -40,7 +40,7 @@ public class GenericTestConsumerConfig {
         }
 
         public void close() {
-            consumer.close();
+            consumer.close(Duration.ofSeconds(1));
         }
     }
 }

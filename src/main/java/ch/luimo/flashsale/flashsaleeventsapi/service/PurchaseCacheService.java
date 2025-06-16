@@ -16,6 +16,7 @@ public class PurchaseCacheService {
     private static final Logger LOG = LoggerFactory.getLogger(PurchaseCacheService.class);
 
     private static final String EVENT_HASH_PREFIX = "flashsale-event-api:event:";
+
     private static final String KEY_EVENT_NAME = "eventName";
     private static final String KEY_START_TIME = "startTime";
     private static final String KEY_DURATION = "duration";
@@ -24,7 +25,8 @@ public class PurchaseCacheService {
     private static final String KEY_MAX_PER_CUSTOMER = "maxPerCustomer";
     private static final String KEY_EVENT_STATUS = "eventStatus";
 
-    private static final String PURCHASE_CACHE_KEY_PREFIX = "flashsale-event-api:purchase:";
+    // this is a shared redis key!
+    private static final String PURCHASE_CACHE_KEY_PREFIX = "flashsale:purchase:";
     private static final String PURCHASE_REQUEST_STATUS = "status";
     private static final String PURCHASE_REQUEST_REJECTION_REASON = "reason";
 
