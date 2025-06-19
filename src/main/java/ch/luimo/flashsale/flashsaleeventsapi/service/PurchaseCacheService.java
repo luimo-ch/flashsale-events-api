@@ -54,7 +54,7 @@ public class PurchaseCacheService {
     }
 
     public void addEvent(AvroFlashSaleEvent event) {
-        String key = EVENT_HASH_PREFIX + event.getId();
+        String key = EVENT_HASH_PREFIX + event.getEventId();
         hashOps.put(key, KEY_EVENT_STATUS, event.getEventStatus().name());
         hashOps.put(key, KEY_EVENT_NAME, event.getEventName());
         hashOps.put(key, KEY_START_TIME, String.valueOf(event.getStartTime()));
@@ -64,7 +64,7 @@ public class PurchaseCacheService {
         hashOps.put(key, KEY_MAX_PER_CUSTOMER, String.valueOf(event.getMaxPerCustomer()));
     }
 
-    public void removeEvent(long eventId) {
+    public void removeEvent(String eventId) {
         String key = EVENT_HASH_PREFIX + eventId;
         Boolean deleted = redisTemplate.delete(key);
         if(deleted){
@@ -74,13 +74,13 @@ public class PurchaseCacheService {
         }
     }
 
-    public boolean isEventActive(long eventId) {
+    public boolean isEventActive(String eventId) {
         String key = EVENT_HASH_PREFIX + eventId;
         String eventStatus = hashOps.get(key, KEY_EVENT_STATUS);
         return StringUtils.isNotBlank(eventStatus);
     }
 
-    public int getPerCustomerPurchaseLimit(long eventId) {
+    public int getPerCustomerPurchaseLimit(String eventId) {
         String key = EVENT_HASH_PREFIX + eventId;
         String maxPerCustomerStr = hashOps.get(key, KEY_MAX_PER_CUSTOMER);
         if(StringUtils.isBlank(maxPerCustomerStr)){
@@ -89,8 +89,8 @@ public class PurchaseCacheService {
         return Integer.parseInt(maxPerCustomerStr);
     }
 
-    public void printEvent(long id) {
-        String key = EVENT_HASH_PREFIX + id;
+    public void printEvent(String eventId) {
+        String key = EVENT_HASH_PREFIX + eventId;
         String eventName = hashOps.get(key, KEY_EVENT_NAME);
         String stockQuantity = hashOps.get(key, KEY_STOCK_QUANTITY);
         String eventStatus = hashOps.get(key, KEY_EVENT_STATUS);

@@ -3,6 +3,7 @@
   "name": "AvroPurchaseRequest",
   "namespace": "ch.luimode.flashsale",
   "fields": [
+    { "name": "eventId", "type": "string" },
     { "name": "purchaseId", "type": "string" },
     { "name": "userId", "type": "string" },
     { "name": "itemId", "type": "string" },

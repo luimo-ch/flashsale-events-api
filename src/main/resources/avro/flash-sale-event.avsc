@@ -3,7 +3,7 @@
   "name": "AvroFlashSaleEvent",
   "namespace": "ch.luimo.flashsale.eventservice.avro",
   "fields": [
-    { "name": "id", "type": "long"},
+    { "name": "eventId", "type": "string"},
     { "name": "eventName", "type": "string" },
     { "name": "startTime", "type": { "type": "long", "logicalType": "timestamp-millis" } },
     { "name": "duration", "type": "int" },

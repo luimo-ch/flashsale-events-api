@@ -25,7 +25,7 @@ public class FlashSaleEventsListener {
 
         switch (avroFlashSaleEvent.getEventStatus()) {
             case STARTED -> cacheService.addEvent(avroFlashSaleEvent);
-            case ENDED, CANCELLED -> cacheService.removeEvent(avroFlashSaleEvent.getId());
+            case ENDED, CANCELLED -> cacheService.removeEvent(avroFlashSaleEvent.getEventId());
             default -> LOG.info("No cache action for event status {}", avroFlashSaleEvent.getEventStatus());
         }
     }

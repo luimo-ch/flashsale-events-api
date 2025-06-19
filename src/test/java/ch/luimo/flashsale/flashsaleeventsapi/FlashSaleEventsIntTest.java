@@ -28,20 +28,20 @@ public class FlashSaleEventsIntTest extends IntegrationTestBase {
     @Test
     public void testPublishFlashSaleEvent_startAndEndEvent_shouldAddAndRemoveFromCache() {
         AvroFlashSaleEvent avroFlashSaleEvent = flashSaleEventOf();
-        assertFalse(cacheService.isEventActive(avroFlashSaleEvent.getId()));
+        assertFalse(cacheService.isEventActive(avroFlashSaleEvent.getEventId()));
 
         flashSaleEventsTestProducer.publishEvent(avroFlashSaleEvent);
 
         LOG.info("Test event published: {}", avroFlashSaleEvent);
-        assertEventReceivedAndCached(avroFlashSaleEvent.getId());
+        assertEventReceivedAndCached(avroFlashSaleEvent.getEventId());
 
         avroFlashSaleEvent.setEventStatus(AvroEventStatus.ENDED);
         flashSaleEventsTestProducer.publishEvent(avroFlashSaleEvent);
         LOG.info("Test event published: {}", avroFlashSaleEvent);
-        assertEventReceivedAndRemoved(avroFlashSaleEvent.getId());
+        assertEventReceivedAndRemoved(avroFlashSaleEvent.getEventId());
     }
 
-    private void assertEventReceivedAndCached(Long expectedEventId) {
+    private void assertEventReceivedAndCached(String expectedEventId) {
         assertFalse(cacheService.isEventActive(expectedEventId));
 
         LOG.info("Starting assertEventReceivedAndCached for event with ID: {}", expectedEventId);
@@ -53,7 +53,7 @@ public class FlashSaleEventsIntTest extends IntegrationTestBase {
         LOG.info("Finished assertEventReceivedAndCached for event: {}", expectedEventId);
     }
 
-    private void assertEventReceivedAndRemoved(Long expectedEventId) {
+    private void assertEventReceivedAndRemoved(String expectedEventId) {
         LOG.info("Starting assertEventReceivedAndRemoved for event with ID: {}", expectedEventId);
         pollAndAssert(() -> {
             LOG.info("Checking cache removed event ID: {}", expectedEventId);
@@ -72,7 +72,7 @@ public class FlashSaleEventsIntTest extends IntegrationTestBase {
 
     private AvroFlashSaleEvent flashSaleEventOf() {
         return AvroFlashSaleEvent.newBuilder()
-                .setId(1L)
+                .setEventId(UUID.randomUUID().toString())
                 .setEventName("test event")
                 .setStartTime(Instant.now())
                 .setDuration(3600)

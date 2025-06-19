@@ -34,8 +34,8 @@ public class FlashSaleEventsTestProducerConfig {
         }
 
         public void publishEvent(AvroFlashSaleEvent event) {
-            LOG.info("Publishing test event to topic {}: event ID {}", flashSaleEventsTopic, event.getId());
-            kafkaTemplate.send(flashSaleEventsTopic, String.valueOf(event.getId()), event)
+            LOG.info("Publishing test event to topic {}: event ID {}", flashSaleEventsTopic, event.getEventId());
+            kafkaTemplate.send(flashSaleEventsTopic, String.valueOf(event.getEventId()), event)
                     .thenRun(() -> LOG.info("Publishing flash sale event finished: {}", event))
                     .exceptionally(ex -> {
                         LOG.error("Error publishing flash sale event", ex);

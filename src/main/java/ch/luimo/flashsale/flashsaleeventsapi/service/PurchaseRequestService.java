@@ -101,7 +101,7 @@ public class PurchaseRequestService {
     }
 
     private void validatePurchaseRequest(FlashsalePurchaseRequestRest purchaseRequest) {
-        Long flashsaleEventId = purchaseRequest.getFlashsaleEventId();
+        String flashsaleEventId = purchaseRequest.getFlashsaleEventId();
         if (!purchaseCacheService.isEventActive(flashsaleEventId)) {
             throw new BadRequestException("Flashsale event is not active or does not exist: " + flashsaleEventId);
         }

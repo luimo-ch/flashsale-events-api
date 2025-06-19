@@ -35,6 +35,7 @@ public class PublishingService {
 
     private AvroPurchaseRequest toAvroPurchaseRequest(FlashsalePurchaseRequestRest source){
         return new AvroPurchaseRequest(
+            source.getFlashsaleEventId(),
             source.getPurchaseRequestId(),
             source.getUserId(),
             source.getItemId(),

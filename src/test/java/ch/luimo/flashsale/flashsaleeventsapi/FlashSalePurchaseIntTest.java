@@ -31,7 +31,7 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlashSalePurchaseIntTest.class);
 
-    private static final Long FLASH_SALE_ID = 1L;
+    private static final String FLASH_SALE_ID = UUID.randomUUID().toString();
 
     @Autowired
     private PurchaseRequestService purchaseRequestService;
@@ -59,10 +59,10 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
 
     @Test
     public void testSubmitRequest_requestRejected_returnsRejection() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(FLASH_SALE_ID);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenReturn("rejected");
-        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
+        when(purchaseCacheService.isEventActive(FLASH_SALE_ID)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
         verifyNoInteractions(publishingService);
@@ -71,10 +71,10 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
 
     @Test
     public void testSubmitRequest_requestConfirmed_returnsConfirmation() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(FLASH_SALE_ID);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenReturn("confirmed");
-        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
+        when(purchaseCacheService.isEventActive(FLASH_SALE_ID)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
         verifyNoInteractions(publishingService);
@@ -83,10 +83,10 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
 
     @Test
     public void testSubmitRequest_requestPending_returnsPendingStatus() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(FLASH_SALE_ID);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenReturn("pending");
-        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
+        when(purchaseCacheService.isEventActive(FLASH_SALE_ID)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
         verifyNoInteractions(publishingService);
@@ -95,8 +95,8 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
 
     @Test
     public void testSubmitRequest_requestPending_confirmedWithinPolling_returnsConfirmedStatus() {
-        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(1);
-        when(purchaseCacheService.isEventActive(1)).thenReturn(true);
+        FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(FLASH_SALE_ID);
+        when(purchaseCacheService.isEventActive(FLASH_SALE_ID)).thenReturn(true);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
                 .thenAnswer(new Answer<String>() {
                     private int count = 0;
@@ -113,7 +113,7 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
         assertThat(flashsalePurchaseResponseREST.getStatus()).isEqualTo(PurchaseRequestStatus.CONFIRMED);
     }
 
-    private FlashsalePurchaseRequestRest createPurchaseRequestREST(long flashSaleEventId) {
+    private FlashsalePurchaseRequestRest createPurchaseRequestREST(String flashSaleEventId) {
         FlashsalePurchaseRequestRest purchaseRequest = new FlashsalePurchaseRequestRest();
         purchaseRequest.setFlashsaleEventId(flashSaleEventId);
         purchaseRequest.setRequestedAt(OffsetDateTime.now());
