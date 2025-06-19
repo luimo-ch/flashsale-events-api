@@ -50,7 +50,7 @@ public class PurchaseCacheService {
 
     public void setPendingStatus(String purchaseRequestId) {
         String key = PURCHASE_CACHE_KEY_PREFIX + purchaseRequestId;
-        hashOps.put(key, PURCHASE_REQUEST_STATUS, PENDING.name().toLowerCase());
+        hashOps.put(key, PURCHASE_REQUEST_STATUS, PENDING.name());
     }
 
     public void addEvent(AvroFlashSaleEvent event) {

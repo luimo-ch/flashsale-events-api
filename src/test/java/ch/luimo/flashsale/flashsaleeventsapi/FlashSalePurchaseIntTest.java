@@ -61,7 +61,7 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
     public void testSubmitRequest_requestRejected_returnsRejection() {
         FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(FLASH_SALE_ID);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
-                .thenReturn("rejected");
+                .thenReturn("REJECTED");
         when(purchaseCacheService.isEventActive(FLASH_SALE_ID)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
@@ -73,7 +73,7 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
     public void testSubmitRequest_requestConfirmed_returnsConfirmation() {
         FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(FLASH_SALE_ID);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
-                .thenReturn("confirmed");
+                .thenReturn("CONFIRMED");
         when(purchaseCacheService.isEventActive(FLASH_SALE_ID)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
@@ -85,7 +85,7 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
     public void testSubmitRequest_requestPending_returnsPendingStatus() {
         FlashsalePurchaseRequestRest purchaseRequest = createPurchaseRequestREST(FLASH_SALE_ID);
         when(purchaseCacheService.getPurchaseRequestStatus(purchaseRequest.getPurchaseRequestId()))
-                .thenReturn("pending");
+                .thenReturn("PENDING");
         when(purchaseCacheService.isEventActive(FLASH_SALE_ID)).thenReturn(true);
         FlashsalePurchaseResponseREST flashsalePurchaseResponseREST = purchaseRequestService.submitPurchase(purchaseRequest);
 
@@ -103,7 +103,7 @@ public class FlashSalePurchaseIntTest extends IntegrationTestBase {
                     @Override
                     public String answer(InvocationOnMock invocation) {
                         count++;
-                        return count < 3 ? "pending" : "confirmed";
+                        return count < 3 ? "PENDING" : "CONFIRMED";
                     }
                 });
 
