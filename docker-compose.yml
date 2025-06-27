@@ -52,7 +52,7 @@ services:
   flashsale-events-api:
     build: .
     ports:
-      - "8081:8081"
+      - "8080:8080"
       - "5005:5005"
     environment: # override 'local' props to use containerized deps while running in the container
       - SPRING_PROFILES_ACTIVE=docker

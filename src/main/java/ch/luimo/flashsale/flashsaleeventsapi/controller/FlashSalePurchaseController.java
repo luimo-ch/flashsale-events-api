@@ -4,6 +4,7 @@ import ch.luimo.flashsale.flashsaleeventsapi.service.PurchaseRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController("/v1/purchases")
@@ -18,7 +19,7 @@ public class FlashSalePurchaseController {
     }
 
     @PostMapping
-    public FlashsalePurchaseResponseREST createPurchaseRequest(FlashsalePurchaseRequestRest purchaseRequest) {
+    public FlashsalePurchaseResponseREST createPurchaseRequest(@RequestBody FlashsalePurchaseRequestRest purchaseRequest) {
         LOG.info("Received POST /v1/purchases, purchaseRequestId: {}", purchaseRequest.getPurchaseRequestId());
         return purchaseRequestService.submitPurchase(purchaseRequest);
     }
