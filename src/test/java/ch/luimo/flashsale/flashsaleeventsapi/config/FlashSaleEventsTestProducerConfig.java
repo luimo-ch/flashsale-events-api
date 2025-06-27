@@ -12,7 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 @TestConfiguration
 public class FlashSaleEventsTestProducerConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(KafkaConsumerConfig.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FlashSaleEventsTestProducerConfig.class);
 
     @Autowired
     private KafkaTemplate<String, AvroFlashSaleEvent> flashSaleEventKafkaTemplate;
