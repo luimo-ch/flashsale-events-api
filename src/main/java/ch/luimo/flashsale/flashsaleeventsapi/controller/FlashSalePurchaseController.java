@@ -5,9 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("/v1/purchases")
+@RestController()
+@RequestMapping("/v1/purchases")
 public class FlashSalePurchaseController {
 
     private static final Logger LOG = LoggerFactory.getLogger(FlashSalePurchaseController.class);
