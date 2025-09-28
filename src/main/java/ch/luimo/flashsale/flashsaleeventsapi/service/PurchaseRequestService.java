@@ -37,8 +37,7 @@ public class PurchaseRequestService {
         String requestStatus = purchaseCacheService.getPurchaseRequestStatus(purchaseRequestId);
 
         if (PurchaseRequestStatus.isRejected(requestStatus)) {
-            String rejectionReason = purchaseCacheService.getRejectionReason(purchaseRequestId);
-            return mapToFlashsalePurchaseRejectionREST(purchaseRequestRest, rejectionReason);
+            return respondWithRejection(purchaseRequestId, purchaseRequestRest);
         }
         if(PurchaseRequestStatus.isConfirmed(requestStatus)) {
             return mapToFlashsalePurchaseResponseREST(purchaseRequestRest, CONFIRMED);
@@ -49,8 +48,13 @@ public class PurchaseRequestService {
             publishPurchaseRequest(purchaseRequestRest);
             LOG.info("Successfully submitted purchase for purchase request with ID {}", purchaseRequestId);
         }
-        PurchaseRequestStatus purchaseRequestStatus = startPollingPurchaseStatus(purchaseRequestId);
-        return mapToFlashsalePurchaseResponseREST(purchaseRequestRest, purchaseRequestStatus);
+
+        PurchaseRequestStatus statusAfterPolling = startPollingPurchaseStatus(purchaseRequestId);
+        if (PurchaseRequestStatus.REJECTED.equals(statusAfterPolling)) {
+            return respondWithRejection(purchaseRequestId, purchaseRequestRest);
+        }
+
+        return mapToFlashsalePurchaseResponseREST(purchaseRequestRest, statusAfterPolling);
     }
 
     public PurchaseRequestStatus startPollingPurchaseStatus(String purchaseRequestId) {
@@ -70,7 +74,6 @@ public class PurchaseRequestService {
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                // Check if we've exceeded the timeout
                 if (System.currentTimeMillis() - startTime >= pollingTimeoutMillis) {
                     if (future.complete(PurchaseRequestStatus.PENDING)) {
                         LOG.debug("Polling timed out after 5 seconds for request {}", purchaseRequestId);
@@ -98,6 +101,11 @@ public class PurchaseRequestService {
         }, 0, pollingIntervalMillis, TimeUnit.MILLISECONDS);
 
         return future;
+    }
+
+    private FlashsalePurchaseResponseREST respondWithRejection(String purchaseRequestId, FlashsalePurchaseRequestRest purchaseRequestRest) {
+        String rejectionReason = purchaseCacheService.getRejectionReason(purchaseRequestId);
+        return mapToFlashsalePurchaseRejectionREST(purchaseRequestRest, rejectionReason);
     }
 
     private void validatePurchaseRequest(FlashsalePurchaseRequestRest purchaseRequest) {
